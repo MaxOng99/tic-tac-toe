@@ -1,40 +1,152 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Board from './components/Board';
+import { useState } from 'react';
 
 import './css/index.css';
 
-function Status() {
+function Status(props) {
+    const player = props.player;
+    const winner = props.winner;
+
+    if (winner !== null) {
+        return(
+            <p id="game-status">Player {winner} has won!</p>
+        );
+    }
+    else{
+        return(
+            <p id="game-status">Player {player}'s turn</p>
+        );
+    }
+}
+
+function Board(props) {
+    const boardState = props.boardState;
+    const winner = props.winner;
+    const cells = boardState.map((symbol, index) => {
+        if (winner !== null || symbol === "X" || symbol === "O") {
+            return(
+                <button disabled onClick={() => props.handleCellClick(index)} key={index}>{symbol}</button>
+            );
+        }
+        else{
+            return(
+                <button onClick={() => props.handleCellClick(index)} key={index}>{symbol}</button>
+            );
+        }
+    })
+    
     return(
-        <p id="game-status">Player X's turn</p>
+        <div id="board-container">
+            {cells}
+        </div>
     );
 }
 
-function Controls() {
+function Controls(props) {
 
-    const cells = Array.from({length: 1}, (_, id) => (<button class="history-btn" key={id}>1</button>));
+    const historyLength = props.historyLength;
+    const cells = Array.from({length: historyLength}, (_, id) => (<button onClick={() => props.rewind(id)} class="history-btn" key={id}>{id+1}</button>));
+
     return(
         <section id="controls">   
             <div id="history-control">
                 <label>History</label>
                 {cells}
             </div>
-            <button id="restart-control">Restart</button>
+            <button onClick={props.handleRestart} id="restart-control">Restart</button>
         </section>
     );
-
-    /* 
-        1. History buttons
-        2. Restart button
-    */
 }
 
 
+function Game() {
+    const [gameState, setGameState] = useState(
+        {
+            "currentIndex": 0,
+            "history": [[".", ".", ".", ".", ".", ".", ".", ".", "."]],
+        }   
+    );
+
+    function checkWinner(boardState) {
+        
+        const winningPositions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        for (let i = 0; i < winningPositions.length; i++) {
+            const [a, b, c] = winningPositions[i];
+            if (boardState[a] === boardState[b] && boardState[a] === boardState[c] && (boardState[a] === "X" || boardState[a] === "O")) {
+                return boardState[a];
+            }
+        }
+        return null;
+    }
+
+    function currentPlayer(historyIndex) {
+        const player = historyIndex % 2 === 0 ? "X" : "O";
+        return player;  
+    }
+
+    function onCellClick(cellIndex) {
+
+        setGameState(prev => {
+            const newIndex = prev.currentIndex + 1;
+            const temp = prev.history[prev.currentIndex].slice();
+            temp[cellIndex] = currentPlayer(prev.currentIndex)
+
+            return(
+                {
+                    "currentIndex": newIndex,
+                    "history": [...prev.history.slice(0, newIndex), temp],
+                }
+            );
+        });
+    }
+
+    function onRestart() {
+        setGameState(prev => {
+            return(
+                {
+                    "currentIndex": 0,
+                    "history": [[".", ".", ".", ".", ".", ".", ".", ".", "."]],
+                }
+            );
+        });
+    }
+
+    function onRewind(index) {
+        setGameState(prev => {
+            return(
+                {
+                    "currentIndex": index,
+                    "history": [...prev.history]
+                }
+            );
+        })
+    }
+
+    const winner = checkWinner(gameState.history[gameState.currentIndex]);
+    const player = currentPlayer(gameState.currentIndex);
+    return(
+        <React.Fragment>
+            <Status player={player} winner={winner}/>
+            <Board boardState={gameState.history[gameState.currentIndex]} handleCellClick={onCellClick} winner={winner}/>
+            <Controls historyLength={gameState.history.length} handleRestart={() => onRestart()} rewind={onRewind}/>
+        </React.Fragment>
+    );
+}
+
 ReactDOM.render(
     <React.StrictMode>
-        <Status />
-        <Board />
-        <Controls />
+        <Game />
     </React.StrictMode>,
     document.getElementById('root')
 );

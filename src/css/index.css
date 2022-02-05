@@ -28,6 +28,36 @@ button {
     font-size: larger;
 }
 
+#board-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5em;
+    justify-content: center;
+}
+
+#board-container > * {
+    width: 80px;
+    height: 80px;
+    border: none;
+    border-radius: 26%;
+    padding: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    color: white;
+    background-color: #323232;
+    transition-duration: 0.4s;
+    font-size: x-large;
+    gap: 10px;
+}
+
+#board-container > *:hover {
+    background-color: #F7F7F7;
+    color: #323232;
+}
+
 #controls {
     display: flex;
     flex-direction: column;
@@ -64,8 +94,8 @@ button {
     background-color: #323232;
     border: none;
     border-radius: 12px;
-    width: 30px;
-    height: 30px;
+    width: 48px;
+    height: 48px;
     display: flex;
     justify-content: center;
     align-items: center;
