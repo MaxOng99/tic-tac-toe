@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --mode development --open --hot",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -b gh-pages -d ./dist/"
   },
+  "homepage": "https://maxong99.github.io/tic-tac-toe",
   "author": "Yi Cheng",
   "license": "MIT",
   "dependencies": {
