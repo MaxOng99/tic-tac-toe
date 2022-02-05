@@ -7,11 +7,17 @@ import './css/index.css';
 function Status(props) {
     const player = props.player;
     const winner = props.winner;
+    const turns = props.turns;
 
     if (winner !== null) {
         return(
             <p id="game-status">Player {winner} has won!</p>
         );
+    }
+    else if (turns === 9) {
+        return(
+            <p id="game-status">Draw</p>
+        );  
     }
     else{
         return(
@@ -67,6 +73,16 @@ function Game() {
             "history": [[".", ".", ".", ".", ".", ".", ".", ".", "."]],
         }   
     );
+
+    function filledCells(boardState) {
+        let cellsWithSymbols = 0;
+        for (let i = 0; i < boardState.length; i++) {
+            if (boardState[i] === "X" || boardState[i] === "O") {
+                cellsWithSymbols = cellsWithSymbols + 1;
+            }
+        }
+        return cellsWithSymbols;
+    }
 
     function checkWinner(boardState) {
         
@@ -135,9 +151,10 @@ function Game() {
 
     const winner = checkWinner(gameState.history[gameState.currentIndex]);
     const player = currentPlayer(gameState.currentIndex);
+    const cellsWithSymbols = filledCells(gameState.history[gameState.currentIndex]);
     return(
         <React.Fragment>
-            <Status player={player} winner={winner}/>
+            <Status player={player} winner={winner} turns={cellsWithSymbols}/>
             <Board boardState={gameState.history[gameState.currentIndex]} handleCellClick={onCellClick} winner={winner}/>
             <Controls historyLength={gameState.history.length} handleRestart={() => onRestart()} rewind={onRewind}/>
         </React.Fragment>
