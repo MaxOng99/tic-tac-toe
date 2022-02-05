@@ -1,8 +1,9 @@
 import React from "react";
+import Board from "./components/Board";
 
 function App() {
     return(
-        <p>Hello</p>
+        <Board></Board>
     );
 }
 export default App;
