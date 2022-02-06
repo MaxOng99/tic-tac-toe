@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --mode development --open --hot",
+    "clean": "gh-pages-clean",
     "build": "webpack --mode production",
     "predeploy": "npm run build",
     "deploy": "gh-pages -b gh-pages -d ./dist/"
