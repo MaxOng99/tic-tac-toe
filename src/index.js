@@ -1,9 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+import useLocalStorage from './hooks/useLocalStorage';
 
 import './css/index.css';
 
+/* GLOBAL PROPS */
+const INITIAL_BOARD_STATE = [".", ".", ".", ".", ".", ".", ".", ".", "."];
+const INITIAL_INDEX = 0;
+const INITIAL_GAME_STATE = {"currentIndex": INITIAL_INDEX, "history": [INITIAL_BOARD_STATE]};
+
+/* COMPOMNENTS */
 function Status(props) {
     const player = props.player;
     const winner = props.winner;
@@ -67,13 +74,9 @@ function Controls(props) {
 
 
 function Game() {
-    const [gameState, setGameState] = useState(
-        {
-            "currentIndex": 0,
-            "history": [[".", ".", ".", ".", ".", ".", ".", ".", "."]],
-        }   
-    );
 
+    const [gameState, setGameState] = useLocalStorage("gameState", INITIAL_GAME_STATE);
+    
     function filledCells(boardState) {
         let cellsWithSymbols = 0;
         for (let i = 0; i < boardState.length; i++) {
@@ -156,7 +159,7 @@ function Game() {
         <React.Fragment>
             <Status player={player} winner={winner} turns={cellsWithSymbols}/>
             <Board boardState={gameState.history[gameState.currentIndex]} handleCellClick={onCellClick} winner={winner}/>
-            <Controls historyLength={gameState.history.length} handleRestart={() => onRestart()} rewind={onRewind}/>
+            <Controls historyLength={gameState.history.length} handleRestart={onRestart} rewind={onRewind}/>
         </React.Fragment>
     );
 }
