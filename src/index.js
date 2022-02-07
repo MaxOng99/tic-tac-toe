@@ -1,6 +1,5 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { useState } from 'react';
 import useLocalStorage from './hooks/useLocalStorage';
 
 import './css/index.css';
