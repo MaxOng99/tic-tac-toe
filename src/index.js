@@ -59,7 +59,7 @@ function Board(props) {
 function Controls(props) {
 
     const historyLength = props.historyLength;
-    const cells = Array.from({length: historyLength}, (_, id) => (<button onClick={() => props.rewind(id)} class="history-btn" key={id}>{id+1}</button>));
+    const cells = Array.from({length: historyLength}, (_, id) => (<button onClick={() => props.rewind(id)} className="history-btn" key={id}>{id+1}</button>));
 
     return(
         <section id="controls">   
