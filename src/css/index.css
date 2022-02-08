@@ -53,10 +53,17 @@ button {
     gap: 10px;
 }
 
-#board-container > *:hover {
+#board-container > .disable-false:hover {
     background-color: #F7F7F7;
     color: #323232;
 }
+
+#board-container > .disable-true{
+    color: white;
+    background-color: #323232;
+    cursor: default;
+}
+
 
 #controls {
     display: flex;

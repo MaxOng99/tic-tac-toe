@@ -106,6 +106,7 @@ const Board = ({ winner, boardState, handleCellClickFunction }) => {
         const disableButton = (winner || symbol != ".") ? true : false;
         return (
             <button key={index}
+            className={`disable-${String(disableButton)}`}
             onClick={() => handleCellClickFunction(index)}
             disabled={disableButton}>
                 {symbol}
