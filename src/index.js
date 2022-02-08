@@ -122,7 +122,7 @@ const Board = ({ winner, boardState, handleCellClickFunction }) => {
     );
 }
 
-function Controls({ rewindToHistoryByIndex, restartBoardFunction, historyLength }) {
+const Controls = ({ rewindToHistoryByIndex, restartBoardFunction, historyLength }) => {
 
     /* History Controls UI */
     const historyButtons = []
