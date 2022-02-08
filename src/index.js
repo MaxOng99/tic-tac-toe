@@ -4,162 +4,147 @@ import useLocalStorage from './hooks/useLocalStorage';
 
 import './css/index.css';
 
-/* GLOBAL PROPS */
-const INITIAL_BOARD_STATE = [".", ".", ".", ".", ".", ".", ".", ".", "."];
-const INITIAL_INDEX = 0;
-const INITIAL_GAME_STATE = {"currentIndex": INITIAL_INDEX, "history": [INITIAL_BOARD_STATE]};
+/* GLOBAL VARS */
+const WINNING_POSITIONS = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
 
-/* COMPOMNENTS */
-function Status(props) {
-    const player = props.player;
-    const winner = props.winner;
-    const turns = props.turns;
+const INITIAL_GAME_STATE = { "currentHistoryIndex": 0, "history": [Array(9).fill(".")]};
 
-    if (winner !== null) {
-        return(
-            <p id="game-status">Player {winner} has won!</p>
-        );
-    }
-    else if (turns === 9) {
-        return(
-            <p id="game-status">Draw</p>
-        );  
-    }
-    else{
-        return(
-            <p id="game-status">Player {player}'s turn</p>
-        );
-    }
-}
+/* COMPONENTS */
+const Game = () => {
 
-function Board(props) {
-    const boardState = props.boardState;
-    const winner = props.winner;
-    const cells = boardState.map((symbol, index) => {
-        if (winner !== null || symbol === "X" || symbol === "O") {
-            return(
-                <button disabled onClick={() => props.handleCellClick(index)} key={index}>{symbol}</button>
-            );
-        }
-        else{
-            return(
-                <button onClick={() => props.handleCellClick(index)} key={index}>{symbol}</button>
-            );
-        }
-    })
-    
-    return(
-        <div id="board-container">
-            {cells}
-        </div>
-    );
-}
-
-function Controls(props) {
-
-    const historyLength = props.historyLength;
-    const cells = Array.from({length: historyLength}, (_, id) => (<button onClick={() => props.rewind(id)} className="history-btn" key={id}>{id+1}</button>));
-
-    return(
-        <section id="controls">   
-            <div id="history-control">
-                <label>History</label>
-                {cells}
-            </div>
-            <button onClick={props.handleRestart} id="restart-control">Restart</button>
-        </section>
-    );
-}
-
-
-function Game() {
-
+    /** Top-level state */
     const [gameState, setGameState] = useLocalStorage("gameState", INITIAL_GAME_STATE);
+
+    /** Derived state properties */
+    const currentBoardState = gameState.history[gameState.currentHistoryIndex]; 
+    const winner = getWinner(currentBoardState);
+    const player = getCurrentPlayer(gameState.currentHistoryIndex);
     
-    function filledCells(boardState) {
-        let cellsWithSymbols = 0;
-        for (let i = 0; i < boardState.length; i++) {
-            if (boardState[i] === "X" || boardState[i] === "O") {
-                cellsWithSymbols = cellsWithSymbols + 1;
-            }
-        }
-        return cellsWithSymbols;
-    }
-
-    function checkWinner(boardState) {
-        
-        const winningPositions = [
-            [0, 1, 2],
-            [3, 4, 5],
-            [6, 7, 8],
-            [0, 3, 6],
-            [1, 4, 7],
-            [2, 5, 8],
-            [0, 4, 8],
-            [2, 4, 6]
-        ];
-
-        for (let i = 0; i < winningPositions.length; i++) {
-            const [a, b, c] = winningPositions[i];
-            if (boardState[a] === boardState[b] && boardState[a] === boardState[c] && (boardState[a] === "X" || boardState[a] === "O")) {
-                return boardState[a];
-            }
-        }
-        return null;
-    }
-
-    function currentPlayer(historyIndex) {
-        const player = historyIndex % 2 === 0 ? "X" : "O";
-        return player;  
-    }
-
-    function onCellClick(cellIndex) {
-
-        setGameState(prev => {
-            const newIndex = prev.currentIndex + 1;
-            const temp = prev.history[prev.currentIndex].slice();
-            temp[cellIndex] = currentPlayer(prev.currentIndex)
-
-            return(
-                {
-                    "currentIndex": newIndex,
-                    "history": [...prev.history.slice(0, newIndex), temp],
-                }
-            );
-        });
-    }
-
+    /** Event Callbacks */
     function onRestart() {
-        setGameState(prev => {
-            return(
-                {
-                    "currentIndex": 0,
-                    "history": [[".", ".", ".", ".", ".", ".", ".", ".", "."]],
-                }
-            );
-        });
+        setGameState(INITIAL_GAME_STATE);
     }
 
-    function onRewind(index) {
+    function onRewind(historyIndex) {
         setGameState(prev => {
             return(
                 {
-                    "currentIndex": index,
-                    "history": [...prev.history]
+                    "currentHistoryIndex": historyIndex,
+                    "history": prev.history
                 }
             );
         })
     }
 
-    const winner = checkWinner(gameState.history[gameState.currentIndex]);
-    const player = currentPlayer(gameState.currentIndex);
-    const cellsWithSymbols = filledCells(gameState.history[gameState.currentIndex]);
+    function onBoardCellClick(boardCellIndex) {
+        setGameState(prev => {
+            const currentHistoryIndex = prev.currentHistoryIndex;
+            const currentBoardState = prev.history[currentHistoryIndex];
+
+            const newIndex = currentHistoryIndex + 1;
+            const newBoardState = currentBoardState.slice();
+            newBoardState[boardCellIndex] = getCurrentPlayer(currentHistoryIndex);
+
+            return(
+                {
+                    "currentHistoryIndex": newIndex,
+                    "history": [...prev.history.slice(0, newIndex), newBoardState],
+                }
+            );
+        });
+    }
+
+    /** Utility Functions */
+    function getWinner(boardState) {
+        for (let i = 0; i < WINNING_POSITIONS.length; i++) {
+            const [pos1, pos2, pos3] = WINNING_POSITIONS[i];
+            if (boardState[pos1] === boardState[pos2] && boardState[pos1] === boardState[pos3] && boardState[pos1] != ".") {
+                return boardState[pos1];
+            }
+        }
+        return null;
+    }
+
+    function getCurrentPlayer(historyIndex) {
+        return historyIndex % 2 === 0 ? "X" : "O";  
+    }
+
+    /** UI Rendering */
     return(
         <React.Fragment>
-            <Status player={player} winner={winner} turns={cellsWithSymbols}/>
-            <Board boardState={gameState.history[gameState.currentIndex]} handleCellClick={onCellClick} winner={winner}/>
-            <Controls historyLength={gameState.history.length} handleRestart={onRestart} rewind={onRewind}/>
+            <Status boardState={currentBoardState} player={player} winner={winner}/>
+            <Board boardState={currentBoardState} handleCellClickFunction={onBoardCellClick} winner={winner}/>
+            <Controls historyLength={gameState.history.length} restartBoardFunction={onRestart} rewindToHistoryByIndex={onRewind}/>
         </React.Fragment>
+    );
+}
+
+const Status = ({ player, winner, boardState }) => {
+    const statusMessage = winner 
+        ? `Player ${winner} has won!`
+        : boardState.every( (symbol) => (symbol == "O" || symbol == "X") )  
+        ? `It's a draw!`
+        : `Player ${player}'s turn`
+
+    return(
+        <p id="game-status">{statusMessage}</p>
+    );
+}
+
+const Board = ({ winner, boardState, handleCellClickFunction }) => {    
+    /* Board Cells UI */
+    const boardCells = boardState.map((symbol, index) => {
+        const disableButton = (winner || symbol != ".") ? true : false;
+        return (
+            <button key={index}
+            onClick={() => handleCellClickFunction(index)}
+            disabled={disableButton}>
+                {symbol}
+            </button>
+        );
+    });
+
+    /** Board UI */
+    return(
+        <div id="board-container">
+            {boardCells}
+        </div>
+    );
+}
+
+function Controls({ rewindToHistoryByIndex, restartBoardFunction, historyLength }) {
+
+    /* History Controls UI */
+    const historyButtons = []
+    for (let index = 0; index < historyLength; index++) {
+        historyButtons.push(
+            <button className="history-btn" onClick={() => rewindToHistoryByIndex(index)} key={index}>
+                {index + 1}
+            </button>
+        );
+    }
+    const historyControl = <div id="history-control">
+        <label>History</label>
+        {historyButtons}
+    </div>
+
+    /* Restart Button UI*/
+    const restartButton = <button id="restart-control" onClick={restartBoardFunction}>Restart</button>
+
+    return(
+        <section id="controls">
+            {historyControl}
+            {restartButton}
+        </section>
     );
 }
 
